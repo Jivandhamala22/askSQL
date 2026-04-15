@@ -21,16 +21,18 @@ Ask your database questions in plain English. Get back real SQL and real results
 - **Cloud**: AWS (Lambda + S3)
 
 ## Project structure
+```
 asksql/
-├── backend/
+│── backend/
 │   ├── database/
-│   │   ├── schema.sql        # table definitions
-│   │   ├── seed.py           # creates and seeds the db
-│   │   └── ecommerce.db      # local db (gitignored)
-│   ├── .env                  # secrets (gitignored)
-│   └── test_groq.py          # groq connection test
+│   │   ├── schema.sql
+│   │   ├── seed.py
+│   │   └── ecommerce.db
+│   ├── .env
+│   └── test_groq.py
 ├── requirements.txt
 └── README.md
+```
 
 ## Setup
 
