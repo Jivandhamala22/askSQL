@@ -14,3 +14,8 @@ export async function askQuestion(question) {
 
   return response.json()
 }
+export async function fetchTables() {
+  const response = await fetch(`${API_URL}/tables`)
+  if (!response.ok) throw new Error("Could not load schema")
+  return response.json()
+}

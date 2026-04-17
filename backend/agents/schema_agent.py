@@ -3,6 +3,61 @@ import os
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "ecommerce.db")
 
+def get_table_info() -> list[dict]:
+    """
+    Returns a list of tables with their column names and types.
+    Used by the /tables endpoint to show the user
+    what the database contains before they ask a question.
+
+    Example return value:
+    [
+      {
+        "table": "customers",
+        "columns": [
+          {"name": "id",      "type": "INTEGER"},
+          {"name": "name",    "type": "TEXT"},
+          {"name": "email",   "type": "TEXT"},
+          {"name": "city",    "type": "TEXT"},
+          {"name": "country", "type": "TEXT"},
+        ],
+        "row_count": 5
+      },
+      ...
+    ]
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT name FROM sqlite_master
+        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+        ORDER BY name
+    """)
+    tables = [row[0] for row in cursor.fetchall()]
+
+    result = []
+
+    for table in tables:
+        # column names and types
+        cursor.execute(f"PRAGMA table_info({table})")
+        columns = [
+            {"name": row[1], "type": row[2]}
+            for row in cursor.fetchall()
+        ]
+
+        # total row count
+        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+        row_count = cursor.fetchone()[0]
+
+        result.append({
+            "table": table,
+            "columns": columns,
+            "row_count": row_count,
+        })
+
+    conn.close()
+    return result
+
 
 def get_schema() -> str:
     """

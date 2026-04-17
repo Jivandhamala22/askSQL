@@ -1,13 +1,24 @@
-import { useState } from "react"
-import { askQuestion } from "./api/asksql"
+import { useState, useEffect } from "react"
+import { askQuestion, fetchTables } from "./api/asksql"
 import QueryInput from "./components/QueryInput"
 import SQLPreview from "./components/SQLPreview"
 import ResultsTable from "./components/ResultsTable"
+import SchemaPanel from "./components/SchemaPanel"
 
 export default function App() {
-  const [result, setResult]   = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
+  const [result, setResult]         = useState(null)
+  const [loading, setLoading]       = useState(false)
+  const [error, setError]           = useState(null)
+  const [tables, setTables]         = useState([])
+  const [schemaLoading, setSchemaLoading] = useState(true)
+
+  // load schema once when the page opens
+  useEffect(() => {
+    fetchTables()
+      .then(data => setTables(data.tables))
+      .catch(() => setTables([]))
+      .finally(() => setSchemaLoading(false))
+  }, [])
 
   async function handleQuestion(question) {
     setLoading(true)
@@ -35,6 +46,8 @@ export default function App() {
           Ask your database anything in plain English.
         </p>
       </div>
+
+      <SchemaPanel tables={tables} loading={schemaLoading} />
 
       <QueryInput onSubmit={handleQuestion} loading={loading} />
 

@@ -12,6 +12,7 @@ load_dotenv()
 from agents.schema_agent import get_schema
 from agents.sql_writer import generate_sql
 from agents.sql_executor import run_sql
+from agents.schema_agent import get_table_info
 
 app = FastAPI(title="AskSQL", version="1.0.0")
 
@@ -26,7 +27,7 @@ app.add_middleware(
 @app.get("/hello")
 async def hello():
     return {"message": "Hello from AskSQL API!"}
-    
+
 # ── request and response shapes ─────────────────────────
 class QuestionRequest(BaseModel):
     question: str
@@ -75,3 +76,15 @@ def ask(req: QuestionRequest):
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "AskSQL"}
+
+@app.get("/tables")                           
+def tables():
+    """
+    Returns all table names and their columns.
+    The React frontend uses this to show the user
+    what they can ask questions about.
+    """
+    try:
+        return {"tables": get_table_info()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
