@@ -5,8 +5,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PROMPT_TEMPLATE = """You are a SQL expert working with a SQLite database.
-Given the schema below, write a single SQL query to answer the question.
-Return ONLY the SQL query — no explanation, no markdown, no backticks.
+Given the schema below, write a single SQL SELECT query to answer the question.
+
+STRICT RULES:
+- Write ONLY a SELECT statement
+- Do NOT use CREATE, DROP, DELETE, UPDATE, INSERT, WITH, or any DDL
+- Do NOT use CTEs or temporary tables
+- Return ONLY the raw SQL query, no explanation, no markdown, no backticks
 
 DATABASE SCHEMA:
 {schema}
