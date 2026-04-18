@@ -1,18 +1,29 @@
 import { useState, useEffect } from "react"
 import { askQuestion, fetchTables } from "./api/asksql"
+import Navbar from "./components/Navbar"
+import Footer from "./components/Footer"
+import SchemaPanel from "./components/SchemaPanel"
 import QueryInput from "./components/QueryInput"
 import SQLPreview from "./components/SQLPreview"
 import ResultsTable from "./components/ResultsTable"
-import SchemaPanel from "./components/SchemaPanel"
 
 export default function App() {
-  const [result, setResult]         = useState(null)
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState(null)
-  const [tables, setTables]         = useState([])
+  const [result, setResult]               = useState(null)
+  const [loading, setLoading]             = useState(false)
+  const [error, setError]                 = useState(null)
+  const [tables, setTables]               = useState([])
   const [schemaLoading, setSchemaLoading] = useState(true)
+  const [hasSearched, setHasSearched]     = useState(false)
+  const [darkMode, setDarkMode]           = useState(false)
 
-  // load schema once when the page opens
+  // apply dark mode to the HTML root element
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      "data-theme", darkMode ? "dark" : "light"
+    )
+  }, [darkMode])
+
+  // load schema on first mount
   useEffect(() => {
     fetchTables()
       .then(data => setTables(data.tables))
@@ -24,6 +35,7 @@ export default function App() {
     setLoading(true)
     setError(null)
     setResult(null)
+    setHasSearched(true)      // hide example pills from now on
 
     try {
       const data = await askQuestion(question)
@@ -36,55 +48,86 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: "860px", margin: "0 auto", padding: "40px 20px" }}>
+    <>
+      <Navbar
+        darkMode={darkMode}
+        toggleDark={() => setDarkMode(d => !d)}
+      />
 
-      <div style={{ marginBottom: "32px" }}>
-        <h1 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "6px" }}>
-          AskSQL
-        </h1>
-        <p style={{ color: "#666", fontSize: "15px" }}>
-          Ask your database anything in plain English.
-        </p>
-      </div>
+      <main style={{
+        flex: 1,
+        maxWidth: "900px",
+        margin: "0 auto",
+        width: "100%",
+        padding: "32px 20px",
+      }}>
 
-      <SchemaPanel tables={tables} loading={schemaLoading} />
-
-      <QueryInput onSubmit={handleQuestion} loading={loading} />
-
-      {loading && (
-        <div style={{
-          display: "flex", gap: "8px", alignItems: "center",
-          color: "#888", fontSize: "13px", margin: "16px 0",
-        }}>
-          <span>Reading schema</span>
-          <span>→</span>
-          <span>Writing SQL</span>
-          <span>→</span>
-          <span>Running query...</span>
+        <div style={{ marginBottom: "28px" }}>
+          <h1 style={{
+            fontSize: "26px", fontWeight: "700",
+            marginBottom: "6px", color: "var(--text)",
+          }}>
+            Ask your database anything
+          </h1>
+          <p style={{ color: "var(--muted)", fontSize: "14px" }}>
+            Type a question in plain English, QuerySQL writes the SQL,
+            runs it, and shows us real results instantly.
+          </p>
         </div>
-      )}
 
-      {error && (
-        <div style={{
-          background: "#fff5f5", border: "1px solid #fca5a5",
-          borderRadius: "8px", padding: "12px 16px",
-          color: "#dc2626", fontSize: "14px", marginBottom: "16px",
-        }}>
-          {error}
-        </div>
-      )}
+        <SchemaPanel tables={tables} loading={schemaLoading} />
 
-      {result && (
-        <>
-          <SQLPreview sql={result.sql} />
-          <ResultsTable
-            columns={result.columns}
-            rows={result.rows}
-            rowCount={result.row_count}
-          />
-        </>
-      )}
+        <QueryInput
+          onSubmit={handleQuestion}
+          loading={loading}
+          hasSearched={hasSearched}
+        />
 
-    </div>
+        {loading && (
+          <div style={{
+            display: "flex", gap: "6px", alignItems: "center",
+            color: "var(--muted)", fontSize: "12px", margin: "14px 0",
+            padding: "10px 14px", background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
+          }}>
+            <span style={{
+              width: "8px", height: "8px", borderRadius: "50%",
+              background: "#facc15", display: "inline-block",
+              animation: "pulse 1s infinite",
+            }} />
+            Reading schema → Writing SQL → Running query...
+          </div>
+        )}
+
+        {error && (
+          <div style={{
+            background: "var(--danger-bg)",
+            border: "1px solid var(--danger-bd)",
+            borderRadius: "var(--radius-sm)",
+            padding: "12px 16px",
+            color: "var(--danger)",
+            fontSize: "13px",
+            marginBottom: "16px",
+          }}>
+            <strong>Error: </strong>{error}
+          </div>
+        )}
+
+        {result && (
+          <div>
+            <SQLPreview sql={result.sql} />
+            <ResultsTable
+              columns={result.columns}
+              rows={result.rows}
+              rowCount={result.row_count}
+            />
+          </div>
+        )}
+
+      </main>
+
+      <Footer />
+    </>
   )
 }

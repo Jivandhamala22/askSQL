@@ -8,7 +8,7 @@ const EXAMPLES = [
   "Which customers are from Germany?",
 ]
 
-export default function QueryInput({ onSubmit, loading }) {
+export default function QueryInput({ onSubmit, loading, hasSearched }) {
   const [question, setQuestion] = useState("")
 
   function handleSubmit(e) {
@@ -23,10 +23,10 @@ export default function QueryInput({ onSubmit, loading }) {
   }
 
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <div style={{ marginBottom: "20px" }}>
 
       <form onSubmit={handleSubmit} style={{
-        display: "flex", gap: "8px", marginBottom: "12px"
+        display: "flex", gap: "8px", marginBottom: "10px",
       }}>
         <input
           type="text"
@@ -36,53 +36,60 @@ export default function QueryInput({ onSubmit, loading }) {
           disabled={loading}
           autoFocus
           style={{
-            flex: 1,
-            padding: "12px 16px",
-            fontSize: "15px",
-            border: "1px solid #ddd",
-            borderRadius: "8px",
+            flex: 1, padding: "11px 16px", fontSize: "14px",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)",
             outline: "none",
-            background: "white",
+            background: "var(--surface)",
+            color: "var(--text)",
           }}
+          onFocus={e => e.target.style.borderColor = "#a1a1aa"}
+          onBlur={e  => e.target.style.borderColor = "var(--border)"}
         />
         <button
           type="submit"
           disabled={loading || !question.trim()}
           style={{
-            padding: "12px 24px",
-            fontSize: "15px",
-            fontWeight: "500",
-            background: loading ? "#ccc" : "#1a1a1a",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: loading ? "not-allowed" : "pointer",
+            padding: "11px 22px", fontSize: "14px", fontWeight: "600",
+            background: loading || !question.trim()
+              ? "var(--border)" : "var(--accent)",
+            color: loading || !question.trim()
+              ? "var(--muted)" : "var(--accent-fg)",
+            border: "none", borderRadius: "var(--radius-sm)",
           }}
         >
           {loading ? "Thinking..." : "Ask"}
         </button>
       </form>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-        {EXAMPLES.map(q => (
-          <button
-            key={q}
-            onClick={() => useExample(q)}
-            disabled={loading}
-            style={{
-              padding: "5px 12px",
-              fontSize: "12px",
-              background: "white",
-              border: "1px solid #ddd",
-              borderRadius: "20px",
-              cursor: "pointer",
-              color: "#555",
-            }}
-          >
-            {q}
-          </button>
-        ))}
-      </div>
+      {/* hide example pills once the user has searched */}
+      {!hasSearched && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          <span style={{
+            fontSize: "11px", color: "var(--muted)",
+            alignSelf: "center", marginRight: "2px",
+          }}>
+            Try:
+          </span>
+          {EXAMPLES.map(q => (
+            <button
+              key={q}
+              onClick={() => useExample(q)}
+              disabled={loading}
+              style={{
+                padding: "4px 11px", fontSize: "12px",
+                background: "var(--surface)", color: "var(--muted)",
+                border: "1px solid var(--border)",
+                borderRadius: "20px",
+              }}
+              onMouseEnter={e => e.target.style.borderColor = "#a1a1aa"}
+              onMouseLeave={e => e.target.style.borderColor = "var(--border)"}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      )}
 
     </div>
   )

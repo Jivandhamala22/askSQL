@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-export default function SQLPreview({ sql }) {
+export default function SQLPreview({ sql, question }) {
   const [copied, setCopied] = useState(false)
 
   function copy() {
@@ -11,45 +11,50 @@ export default function SQLPreview({ sql }) {
 
   return (
     <div style={{
-      background: "white",
-      border: "1px solid #ddd",
-      borderRadius: "10px",
-      padding: "16px",
-      marginBottom: "16px",
+      background: "var(--surface)", border: "1px solid var(--border)",
+      borderRadius: "var(--radius)", marginBottom: "12px",
+      overflow: "hidden",
     }}>
 
       <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "10px",
+        display: "flex", justifyContent: "space-between",
+        alignItems: "center", padding: "10px 14px",
+        borderBottom: "1px solid var(--border)",
+        background: "var(--bg)",
       }}>
-        <span style={{ fontSize: "12px", fontWeight: "600",
-          color: "#888", textTransform: "uppercase", letterSpacing: "0.05em"
-        }}>
-          Generated SQL
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{
+            fontSize: "11px", fontWeight: "600", color: "var(--muted)",
+            textTransform: "uppercase", letterSpacing: "0.06em",
+          }}>
+            Generated SQL
+          </span>
+          <span style={{
+            fontSize: "11px", background: "#f0fdf4",
+            color: "var(--success)", border: "1px solid #bbf7d0",
+            borderRadius: "10px", padding: "1px 8px",
+          }}>
+            SELECT only
+          </span>
+        </div>
         <button
           onClick={copy}
           style={{
             fontSize: "12px", padding: "4px 10px",
-            background: "transparent", border: "1px solid #ddd",
-            borderRadius: "6px", cursor: "pointer", color: "#555",
+            background: "var(--surface)", border: "1px solid var(--border)",
+            borderRadius: "var(--radius-sm)", color: "var(--muted)",
+            transition: "border-color 0.15s",
           }}
         >
-          {copied ? "Copied!" : "Copy"}
+          {copied ? "Copied ✓" : "Copy"}
         </button>
       </div>
 
       <pre style={{
-        background: "#f8f8f8",
-        borderRadius: "6px",
-        padding: "12px",
-        fontSize: "13px",
-        overflowX: "auto",
-        whiteSpace: "pre-wrap",
-        lineHeight: "1.6",
-        margin: 0,
+        padding: "14px 16px", fontSize: "13px", lineHeight: "1.7",
+        overflowX: "auto", whiteSpace: "pre-wrap",
+        color: "var(--text)", margin: 0,
+        background: "var(--surface)",
       }}>
         {sql}
       </pre>
