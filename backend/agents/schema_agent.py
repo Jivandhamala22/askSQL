@@ -11,18 +11,18 @@ def get_table_info() -> list[dict]:
 
     Example return value:
     [
-      {
+    {
         "table": "customers",
         "columns": [
-          {"name": "id",      "type": "INTEGER"},
-          {"name": "name",    "type": "TEXT"},
-          {"name": "email",   "type": "TEXT"},
-          {"name": "city",    "type": "TEXT"},
-          {"name": "country", "type": "TEXT"},
+        {"name": "id",      "type": "INTEGER"},
+        {"name": "name",    "type": "TEXT"},
+        {"name": "email",   "type": "TEXT"},
+        {"name": "city",    "type": "TEXT"},
+        {"name": "country", "type": "TEXT"},
         ],
         "row_count": 5
-      },
-      ...
+    },
+    ...
     ]
     """
     conn = sqlite3.connect(DB_PATH)
@@ -65,8 +65,8 @@ def get_schema() -> str:
     context string for the LLM prompt.
 
     Returns a string containing:
-      - the CREATE TABLE statement for each table
-      - 2 sample rows per table so the LLM understands real values
+    - the CREATE TABLE statement for each table
+    - 2 sample rows per table so the LLM understands real values
     """
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()

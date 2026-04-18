@@ -17,9 +17,9 @@ def run_sql(sql: str) -> Tuple[List[str], List[List[Any]]]:
     Runs a SQL query safely on the database.
 
     Steps:
-      1. Safety check — block any destructive keywords
-      2. Execute the SELECT on the real database
-      3. Return (column_names, rows) as plain Python lists
+    1. Safety check — block any destructive keywords
+    2. Execute the SELECT on the real database
+    3. Return (column_names, rows) as plain Python lists
 
     Raises ValueError if the query is blocked or fails.
     """

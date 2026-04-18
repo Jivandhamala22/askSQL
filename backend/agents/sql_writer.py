@@ -45,8 +45,8 @@ def generate_sql(question: str, schema: str) -> str:
     # LLM flagged question as not database-related
     if raw.upper().startswith("IRRELEVANT"):
         raise ValueError(
-            "This question is not related to the database. "
-            "Try asking something like: 'Show total revenue by category' "
+            "This question is not related to the database. " 
+            "Try asking 'SELECT only' SQL statements like: 'Show total revenue by category' "
             "or 'Which customers are from Germany?'"
         )
 

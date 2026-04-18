@@ -66,9 +66,9 @@ class QueryResponse(BaseModel):
 def ask(req: QuestionRequest):
     """
     Full pipeline in one endpoint:
-      1. schema_agent  → reads DB structure
-      2. sql_writer    → generates SQL via Groq
-      3. sql_executor  → runs safely on real DB
+    1. schema_agent  → reads DB structure
+    2. sql_writer    → generates SQL via Groq
+    3. sql_executor  → runs safely on real DB
     """
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
