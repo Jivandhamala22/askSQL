@@ -32,24 +32,24 @@ async def hello():
 class QuestionRequest(BaseModel):
     question: str
 
-    @field_validator("question")
-    @classmethod
-    def validate_question(cls, v):
-        v = v.strip()
+    #@field_validator("question")
+    #@classmethod
+    #def validate_question(cls, v):
+    #   v = v.strip()
 
-        if len(v) < 10:
-            raise ValueError(
-                "Question too short. Please ask a complete question."
-            )
-        if len(v.split()) < 3:
-            raise ValueError(
-                "Please ask a complete question with at least 3 words."
-            )
-        if not any(c.isalpha() for c in v):
-            raise ValueError(
-                "Question must contain actual words."
-            )
-        return v
+    #  if len(v) < 10:
+    #     raise ValueError(
+        #        "Question too short. Please ask a complete question."
+    #     )
+    # if len(v.split()) < 3:
+    #     raise ValueError(
+    #        "Please ask a complete question with at least 3 words."
+        #    )
+    #  if not any(c.isalpha() for c in v):
+    #     raise ValueError(
+        #       "Question must contain actual words."
+        #   )
+        #return v
 
 
 
