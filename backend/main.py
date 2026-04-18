@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,6 +31,26 @@ async def hello():
 # ── request and response shapes ─────────────────────────
 class QuestionRequest(BaseModel):
     question: str
+
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, v):
+        v = v.strip()
+
+        if len(v) < 10:
+            raise ValueError(
+                "Question too short. Please ask a complete question."
+            )
+        if len(v.split()) < 3:
+            raise ValueError(
+                "Please ask a complete question with at least 3 words."
+            )
+        if not any(c.isalpha() for c in v):
+            raise ValueError(
+                "Question must contain actual words."
+            )
+        return v
+
 
 
 class QueryResponse(BaseModel):
