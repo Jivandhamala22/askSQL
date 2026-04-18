@@ -42,6 +42,7 @@ export default function App() {
       setResult(data)
     } catch (err) {
       setError(err.message)
+      setResult(null) 
     } finally {
       setLoading(false)
     }
@@ -114,7 +115,7 @@ export default function App() {
           </div>
         )}
 
-        {result && (
+        {result && !error &&(
           <div>
             <SQLPreview sql={result.sql} />
             <ResultsTable
