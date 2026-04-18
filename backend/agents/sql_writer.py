@@ -5,13 +5,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PROMPT_TEMPLATE = """You are a SQL expert working with a SQLite database.
-Given the schema below, write a single SQL SELECT query to answer the question.
+Your ONLY job is to answer questions about the data in the database.
 
 STRICT RULES:
 - Write ONLY a SELECT statement
 - Do NOT use CREATE, DROP, DELETE, UPDATE, INSERT, WITH, or any DDL
 - Do NOT use CTEs or temporary tables
 - Return ONLY the raw SQL query, no explanation, no markdown, no backticks
+- If the question is NOT about the database data (greetings, opinions, general knowledge, personal questions, anything unrelated to the tables),
+    respond with exactly this single word: IRRELEVANT
 
 DATABASE SCHEMA:
 {schema}
@@ -22,11 +24,8 @@ QUESTION:
 SQL:"""
 
 
+
 def generate_sql(question: str, schema: str) -> str:
-    """
-    Sends the question + schema context to Groq and returns
-    a clean SQL string ready for execution.
-    """
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
     prompt = PROMPT_TEMPLATE.format(
@@ -42,6 +41,14 @@ def generate_sql(question: str, schema: str) -> str:
     )
 
     raw = response.choices[0].message.content.strip()
+
+    # LLM flagged question as not database-related
+    if raw.upper().startswith("IRRELEVANT"):
+        raise ValueError(
+            "This question is not related to the database. "
+            "Try asking something like: 'Show total revenue by category' "
+            "or 'Which customers are from Germany?'"
+        )
 
     return clean_sql(raw)
 
