@@ -6,6 +6,7 @@ import ResultsTable from "./components/ResultsTable"
 import SchemaPanel from "./components/SchemaPanel"
 import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
+import PipelineSteps from "./components/PipelineSteps" 
 
 export default function App() {
   const [response, setResponse]           = useState(null)
@@ -87,18 +88,10 @@ export default function App() {
 
         <QueryInput onSubmit={handleQuestion} loading={loading} />
 
-        {loading && (
-          <div style={{
-            display: "flex", gap: "8px", alignItems: "center",
-            color: "var(--muted)", fontSize: "13px", margin: "16px 0",
-          }}>
-            <span>Reading schema</span>
-            <span>→</span>
-            <span>Writing SQL</span>
-            <span>→</span>
-            <span>Running query...</span>
-          </div>
-        )}
+        <PipelineSteps
+          attempts={response?.type === "result" ? response.data.attempts : []}
+          loading={loading}
+        />
 
         {response?.type === "error" && (
           <div style={{

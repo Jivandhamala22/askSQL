@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import re
 from typing import Tuple, List, Any
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "ecommerce.db")
@@ -7,10 +8,12 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "..", "database", "ecommerce.d
 # keywords that must never appear in a generated query
 BLOCKED_KEYWORDS = [
     "DROP", "DELETE", "TRUNCATE", "UPDATE",
-    "INSERT", "ALTER", "CREATE", "REPLACE",
+    "INSERT", "ALTER", "REPLACE",
     "ATTACH", "DETACH", "PRAGMA",
 ]
-
+# CREATE is handled separately because CREATED_AT is a valid column name
+# \bCREATE\b matches the word CREATE but NOT CREATED or CREATED_AT
+CREATE_PATTERN = re.compile(r'\bCREATE\b', re.IGNORECASE)
 
 def run_sql(sql: str) -> Tuple[List[str], List[List[Any]]]:
     """
@@ -45,11 +48,17 @@ def run_sql(sql: str) -> Tuple[List[str], List[List[Any]]]:
 
 
 def _safety_check(sql: str):
-    """Raises ValueError if any blocked keyword is found."""
+    # check CREATE with word boundary — won't match CREATED_AT
+    if CREATE_PATTERN.search(sql):
+        raise ValueError(
+            "Blocked keyword 'CREATE' detected. Only SELECT queries are allowed."
+        )
+
+    # check remaining keywords with word boundaries
     sql_upper = sql.upper()
     for keyword in BLOCKED_KEYWORDS:
-        if keyword in sql_upper:
+        pattern = re.compile(r'\b' + keyword + r'\b', re.IGNORECASE)
+        if pattern.search(sql):
             raise ValueError(
-                f"Blocked keyword '{keyword}' detected. "
-                "Only SELECT queries are allowed."
+                f"Blocked keyword '{keyword}' detected. Only SELECT queries are allowed."
             )

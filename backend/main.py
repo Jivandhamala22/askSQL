@@ -13,6 +13,7 @@ from agents.schema_agent import get_schema
 from agents.sql_writer import generate_sql
 from agents.sql_executor import run_sql
 from agents.schema_agent import get_table_info
+from agents.sql_chain import run_with_retry
 
 app = FastAPI(title="AskSQL", version="1.0.0")
 
@@ -24,6 +25,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {"message": "Welcome to the AskSQL API. Use the /ask endpoint to query your database with natural language."}
 @app.get("/hello")
 async def hello():
     return {"message": "Hello from AskSQL API!"}
@@ -51,7 +55,11 @@ class QuestionRequest(BaseModel):
         #   )
         #return v
 
-
+class AttemptLog(BaseModel):
+    attempt: int
+    sql: str
+    status: str  # "success" or "error"
+    error: str | None = None
 
 class QueryResponse(BaseModel):
     question: str
@@ -59,6 +67,7 @@ class QueryResponse(BaseModel):
     columns: list[str]
     rows: list[list]
     row_count: int
+    attempts: list[AttemptLog]
 
 
 # ── main endpoint ────────────────────────────────────────
@@ -75,8 +84,7 @@ def ask(req: QuestionRequest):
 
     try:
         schema = get_schema()
-        sql = generate_sql(req.question, schema)
-        columns, rows = run_sql(sql)
+        columns, rows, sql, attempts_log = run_with_retry(req.question, schema)
 
         return QueryResponse(
             question=req.question,
@@ -84,6 +92,7 @@ def ask(req: QuestionRequest):
             columns=columns,
             rows=rows,
             row_count=len(rows),
+            attempts=attempts_log,
         )
 
     except ValueError as e:
