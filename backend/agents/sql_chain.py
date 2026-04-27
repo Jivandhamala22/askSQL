@@ -83,14 +83,16 @@ def _build_chain(prompt_template: str):
     # prompt → llm → parser runs in sequence automatically
     return prompt | llm | parser
 
+class IrrelevantQuestionError(ValueError):
+    """Raised when LLM signals the question is not database-related.
+    This should NOT be retried."""
+    pass
 
 def run_with_retry(question: str, schema: str):
-    """
-    Main entry point for the agentic retry loop.
-
-    Returns: (columns, rows) on success
-    Raises:  ValueError with the last error message on total failure
-    """
+    
+    """ Main entry point for the agentic retry loop.
+        Returns: (columns, rows) on success ,Raises:  ValueError with the last error message on total failure  """
+    
     last_error = None
     last_sql = None
     attempt_logs = []
@@ -122,6 +124,10 @@ def run_with_retry(question: str, schema: str):
             last_sql = sql
             print(f"  Generated SQL:\n  {sql}")
 
+            if sql.upper().startswith("IRRELEVANT"):
+                raise IrrelevantQuestionError(f"This question '{question}' is irrelevant to the database. "
+                "Try asking: 'Show total revenue by category'")
+
             # try to run it
             columns, rows = run_sql(sql)
 
@@ -138,6 +144,10 @@ def run_with_retry(question: str, schema: str):
 
         except ValueError as e:
             last_error = str(e)
+
+            if isinstance(e, IrrelevantQuestionError):
+                raise  # don't retry irrelevant questions
+
             print(f"  [LangChain] Attempt {attempt} failed: {last_error}")
 
             attempt_logs.append({

@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 sys.path.insert(0, os.path.dirname(__file__))
 
 from fastapi import FastAPI, HTTPException
@@ -16,6 +17,19 @@ from agents.schema_agent import get_table_info
 from agents.sql_chain import run_with_retry
 
 app = FastAPI(title="AskSQL", version="1.0.0")
+
+# matches greetings, farewells, small talk — any variation
+GREETING_PATTERN = re.compile(
+    r'^(hi+|hello+|hey+|bye+|goodbye|good\s*(morning|afternoon|evening|night)|'
+    r'thanks?|thank\s*you|ok+|okay|yes|no|nope|yep|sure|'
+    r'how\s*are\s*you|what\'?s?\s*up|sup|yo|howdy|'
+    r'nice\s*to\s*meet|good\s*to\s*see|greetings|'
+    r'hola|ciao|salut|bonjour|namaste)[\s!?.]*$',
+    re.IGNORECASE
+)
+
+CONTENT_WORD_PATTERN = re.compile(r'\b[a-zA-Z]{4,}\b')
+
 
 # allow React frontend (running on port 5173) to call this API
 app.add_middleware(
@@ -36,24 +50,33 @@ async def hello():
 class QuestionRequest(BaseModel):
     question: str
 
-    #@field_validator("question")
-    #@classmethod
-    #def validate_question(cls, v):
-    #   v = v.strip()
+    @field_validator("question")
+    @classmethod
+    def validate_question(cls, v: str) -> str:
+        v = v.strip()
 
-    #  if len(v) < 10:
-    #     raise ValueError(
-        #        "Question too short. Please ask a complete question."
-    #     )
-    # if len(v.split()) < 3:
-    #     raise ValueError(
-    #        "Please ask a complete question with at least 3 words."
-        #    )
-    #  if not any(c.isalpha() for c in v):
-    #     raise ValueError(
-        #       "Question must contain actual words."
-        #   )
-        #return v
+        if not v:
+            raise ValueError("Question cannot be empty.")
+
+        if len(v) < 5:
+            raise ValueError(
+                "Question is too short. "
+                "Try asking: 'How many customers are there?'"
+            )
+
+        if GREETING_PATTERN.match(v):
+            raise ValueError(
+                "That looks like a greeting, not a database question. "
+                "Try: 'Show total revenue by category'"
+            )
+
+        if not CONTENT_WORD_PATTERN.search(v):
+            raise ValueError(
+                "Question doesn't seem to contain a meaningful query. "
+                "Try: 'Which products have the most orders?'"
+            )
+
+        return v
 
 class AttemptLog(BaseModel):
     attempt: int
